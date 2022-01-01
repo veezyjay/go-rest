@@ -2,11 +2,11 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"github.com/veezyjay/go-rest/internal/comment"
 )
 
@@ -31,7 +31,7 @@ func NewHandler(service *comment.Service) *Handler {
 
 // SetupRoutes - sets up all the routes to the application
 func (h *Handler) SetupRoutes() {
-	fmt.Println("Setting up Routes")
+	log.Info("Setting up Routes")
 	h.Router = mux.NewRouter()
 
 	h.Router.HandleFunc("/api/comments", h.GetAllComments).Methods("GET")

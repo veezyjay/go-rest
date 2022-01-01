@@ -1,21 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/veezyjay/go-rest/internal/comment"
 	"github.com/veezyjay/go-rest/internal/database"
 	transportHTTP "github.com/veezyjay/go-rest/internal/transport/http"
+	log "github.com/sirupsen/logrus"
 )
 
-// App - the struct which contains things like pointers to
-// database connections
-type App struct{}
+// App - contains application information
+type App struct {
+	Name    string
+	Version string
+}
 
 // Run - sets up the app
 func (app *App) Run() error {
-	fmt.Println("Setting up the app")
+	log.SetFormatter(&log.JSONFormatter{})
+	log.WithFields(
+		log.Fields{
+			"AppName": app.Name,
+			"AppVersion": app.Version,
+		}).Info("Setting up application")
+
 	var err error
 	db, err := database.NewDatabase()
 	if err != nil {
@@ -26,22 +34,24 @@ func (app *App) Run() error {
 	if err != nil {
 		return err
 	}
-	
+
 	commentService := comment.NewService(db)
 	handler := transportHTTP.NewHandler(commentService)
 	handler.SetupRoutes()
 	if err := http.ListenAndServe(":8080", handler.Router); err != nil {
-		fmt.Println("Failed to set up server")
+		log.Error("Failed to set up server")
 		return err
 	}
 	return nil
 }
 
 func main() {
-	fmt.Println("Go Rest API")
-	app := App{}
+	app := App{
+		Name:    "Commenting Service",
+		Version: "1.0.0",
+	}
 	if err := app.Run(); err != nil {
-		fmt.Println("Error starting up the Rest API")
-		fmt.Println(err)
+		log.Error("Error starting up the Rest API")
+		log.Fatal(err)
 	}
 }
